@@ -1,0 +1,6 @@
+﻿services:
+  guitarroom:
+    image: guitarroom
+    build:
+      context: .
+      dockerfile: Dockerfile

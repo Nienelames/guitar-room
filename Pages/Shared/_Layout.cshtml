@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] - GuitarRoom</title>
+    <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/GuitarRoom.styles.css" asp-append-version="true"/>
+    <script defer src="~/js/site.js" asp-append-version="true"></script>
+</head>
+<body>
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+    
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
