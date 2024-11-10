@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true"/>
-        <None Include="wwwroot\js\signalr.js" />
+        <None Include="wwwroot\lib\signalr.js" />
     </ItemGroup>
 
     <ItemGroup>
@@ -79,6 +79,10 @@
       <_ContentIncludedByDefault Remove="wwwroot\lib\jquery\dist\jquery.min.js" />
       <_ContentIncludedByDefault Remove="wwwroot\lib\jquery\dist\jquery.min.map" />
       <_ContentIncludedByDefault Remove="wwwroot\lib\jquery\LICENSE.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\assets\avatars\" />
     </ItemGroup>
 
 </Project>

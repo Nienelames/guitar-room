@@ -6,3 +6,4 @@ riderModule.iml
 *.db
 node_modules
 .idea
+wwwroot/assets/avatars
