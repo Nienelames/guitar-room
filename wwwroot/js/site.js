@@ -1,7 +1,17 @@
 ﻿"use strict";
 
 const socket = new signalR.HubConnectionBuilder().withUrl("/brokerHub").build();
+socket.start().then();
 
-socket.start().then(async () => {
-    await socket.invoke("AnnounceConnection", "1987");
+socket.on("user-connected", (user) => {
+    console.log("User connected:", user);
+})
+
+const peer = new Peer(undefined, {
+    host: "/",
+    port: 9000
+})
+
+peer.on("open", async id => {
+    await socket.invoke("AnnounceConnection", id) ;
 })
