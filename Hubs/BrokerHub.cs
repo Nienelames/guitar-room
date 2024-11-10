@@ -4,22 +4,21 @@ namespace GuitarRoom.Hubs;
 
 public class BrokerHub : Hub
 {
-    public async Task AnnounceConnection(string userId)
-    {
-        Console.WriteLine($"Announcing user connection with id of {userId}");
-        await Clients.All.SendAsync("user-connected", userId);
-    }
+    private readonly Dictionary<string, string> _peerIds = new();
     
-    public override async Task OnConnectedAsync()
+    public async Task AnnounceConnection(string peerId)
     {
-        Console.WriteLine($"Client connected: {Context.ConnectionId}");
-        
-        await base.OnConnectedAsync();
+        _peerIds[Context.ConnectionId] = peerId;
+        await Clients.All.SendAsync("peer-connected", peerId);
     }
-    
+
     public override async Task OnDisconnectedAsync(Exception? exception) 
     {
-        Console.WriteLine($"Client disconnected: {Context.ConnectionId}");
+        if (_peerIds.TryGetValue(Context.ConnectionId, out var peerId))
+        {
+            await Clients.All.SendAsync("peer-disconnected", peerId);
+            _peerIds.Remove(Context.ConnectionId);
+        }
         
         await base.OnDisconnectedAsync(exception);
     }
