@@ -3,8 +3,12 @@
 @{
     ViewData["Title"] = "Home page";
 }
-
-<section id="audio-grid" class="grid place-items-center gap-4 mt-40"></section>
+<main class="grid grid-cols-[20rem_5px_1fr_20rem] auto-rows-min">
+    <partial name="Shared/_PersonalUtils"/>
+    <div class="divider divider-horizontal h-screen"></div>
+    <section id="audio-grid" class="grid justify-items-center gap-4 mt-40 h-min"></section>
+    <aside></aside>
+</main>
 <menu id="audio-controls" class="fixed flex-col bg-base-300 rounded-box w-56 hidden gap-4 p-4">
     <li class="text-center"><h2 class="text-center">Controls</h2></li>
     <li><input id="volume-slider" class="audio-control range" type="range" min="0" max="100" value="100"/></li>
@@ -38,7 +42,6 @@
         });
 
         socket.on("peer-disconnected", peerId => {
-            console.log(peerId)
             if (peers.get(peerId)) peers.get(peerId).close();
         })
 
@@ -61,7 +64,8 @@
                 addAudioStream(peerAudioBubble, peerAudioStream);
             });
             call.on("close", () => {
-                peerBroker.close();
+                call.close();
+                peers.delete(peerId);
             });
             
             peers.set(peerId, call);

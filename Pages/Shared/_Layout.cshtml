@@ -10,9 +10,7 @@
     <script defer src="~/js/site.js" asp-append-version="true"></script>
 </head>
 <body>
-    <main role="main" class="pb-3">
-        @RenderBody()
-    </main>
+    @RenderBody()
     
 @await RenderSectionAsync("Scripts", required: false)
 </body>
