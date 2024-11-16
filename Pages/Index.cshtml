@@ -4,7 +4,12 @@
     ViewData["Title"] = "Home page";
 }
 
-<article id="audio-grid"></article>
+<section id="audio-grid" class="grid place-items-center gap-4 mt-40"></section>
+<menu id="audio-controls" class="fixed flex-col bg-base-300 rounded-box w-56 hidden gap-4 p-4">
+    <li class="text-center"><h2 class="text-center">Controls</h2></li>
+    <li><input id="volume-slider" class="audio-control range" type="range" min="0" max="100" value="100"/></li>
+    <li><button id="mute-button" class="audio-control btn btn-error w-full">Mute</button></li>
+</menu>
 
 
 @section Scripts {
@@ -12,7 +17,9 @@
         if (!localStorage.getItem("displayName")) 
             window.location.replace(`${window.location.origin}/Setup`);
     </script>
-    
+    <script src="~/lib/peerjs.js"></script>
+    <script src="~/lib/signalr.js"></script>
+    <script src="~/js/components/AudioBubble.js"></script>
     <script>
         "use strict";
 
@@ -28,7 +35,6 @@
             peerBroker.on("open", async id => {
                 await socket.invoke("AnnounceConnection", id);
             })
-
         });
 
         socket.on("peer-disconnected", peerId => {
@@ -37,21 +43,22 @@
         })
 
 
-        function addAudioStream(audioElement, stream) {
-            audioElement.srcObject = stream;
-            audioElement.addEventListener("loadedmetadata", async () => {
-                await audioElement.play()
+        function addAudioStream(audioBubble, stream) {
+            audioBubble.audio.srcObject = stream;
+            audioBubble.audio.addEventListener("loadedmetadata", () => {
+                audioBubble.audio.play();
             })
-
-             document.querySelector("#audio-grid").append(audioElement);
+            
+            console.log(audioBubble)
+            document.querySelector("#audio-grid").append(audioBubble);
         }
 
         function connectToNewPeer(peerId, stream) {
             const call = peerBroker.call(peerId, stream);
-            const peerAudioElement = document.createElement("audio");
+            const peerAudioBubble = document.createElement("div", { is: "audio-bubble" });
             
             call.on("stream", peerAudioStream => {
-                addAudioStream(peerAudioElement, peerAudioStream);
+                addAudioStream(peerAudioBubble, peerAudioStream);
             });
             call.on("close", () => {
                 peerBroker.close();
@@ -66,10 +73,10 @@
         }).then(stream => {
            peerBroker.on("call", call => {
                call.answer(stream);
-               const peerAudioElement = document.createElement("audio");
+               const peerAudioBubble = document.createElement("div", { is: "audio-bubble" });
                
                call.on("stream", peerAudioStream => {
-                    addAudioStream(peerAudioElement, peerAudioStream);     
+                    addAudioStream(peerAudioBubble, peerAudioStream);     
                });
            })
            

@@ -25,7 +25,7 @@ public class SetupModel : PageModel
         await using var stream = System.IO.File.Create($"wwwroot/assets/avatars/{avatarFileName}");
         await Avatar.CopyToAsync(stream);
 
-        TempData["AvatarUrl"] = $"~/assets/avatars/{avatarFileName}";
+        TempData["AvatarUrl"] = $"assets/avatars/{avatarFileName}";
         TempData["DisplayName"] = DisplayName;
         
         return RedirectToPage("/SetupSuccess");
