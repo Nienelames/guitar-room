@@ -1,18 +1,39 @@
 class AudioBubble extends HTMLDivElement {
-    audio = document.createElement('audio');
+    #audio = document.createElement('audio');
+    #user;
     constructor()  {
         super();
-
+    }
+    
+    set user(value) {
+        this.#user = value;
+        
+        this.#render();
+    }
+    
+    set audio(value) {
+        this.#audio = value;
+    }
+    
+    get audio() {
+        return this.#audio;
+    }
+    
+    async connectedCallback() {
         this.className = "flex flex-col items-center justify-center text-center card bg-base-200 shadow-xl gap-4 p-8"
-        this.innerHTML = `
-            <img class="w-24 h-24 rounded-full" src="${localStorage.getItem('avatarUrl')}" alt="Avatar">
-            <figcaption>${localStorage.getItem('displayName')}</figcaption>
-        `;
 
         this.addEventListener("contextmenu", this.#handleAudioControlsPopup);
         this.addEventListener("touched", this.#handleAudioControlsPopup);
-        
         this.appendChild(this.audio);
+    }
+    
+    #render() {
+        const { displayName, avatarUrl } = this.#user;
+        
+        this.innerHTML = `
+            <img class="w-24 h-24 rounded-full" src="${window.location.origin}${avatarUrl}" alt="Avatar">
+            <figcaption>${displayName}</figcaption>
+        `;
     }
     
     #handleAudioControlsPopup(event) {
@@ -25,12 +46,15 @@ class AudioBubble extends HTMLDivElement {
         audioControlsElement.style.top = `${event.pageY}px`
         
         const volumeSlider = document.querySelector("#volume-slider");
-        const muteButton = document.querySelector("#mute-button");
         
         volumeSlider.value = this.audio.volume * 100;
         volumeSlider.onchange = (event) => {
             this.audio.volume = Number(event.target.value) / 100;
         }
+
+        const muteButton = document.querySelector("#mute-button");
+        
+        
         muteButton.onclick = () => {
             if (!this.audio.muted) {
                 this.audio.muted = true;

@@ -1,0 +1,40 @@
+@page
+@model LoginModel
+    
+<div class="grid place-content-center mt-40">
+    <form class="flex flex-col gap-4 justify-center items-center" method="POST" enctype="multipart/form-data">
+        <input class="input input-bordered border-t-0 border-x-0 focus:outline-0 focus:border-white text-center" type="text" name="DisplayName" placeholder="Display Name" required />
+        <button type="submit" class="btn btn-primary w-full">Login!</button>
+        <a class="link" href="/Register">Register</a>
+        @if (!ModelState.IsValid)
+        {
+            <p class="text-error">
+                @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    @error.ErrorMessage<br />
+                }
+            </p>
+        }
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelector("#user-avatar-upload").addEventListener("change", (event) => {
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = (event) => {
+                    const userAvatarElement = document.querySelector("#user-avatar");
+                    userAvatarElement.src = event.target.result;
+                    userAvatarElement.classList.remove("hidden");
+                    
+                    document.querySelector("#user-avatar-placeholder").classList.add("hidden");
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

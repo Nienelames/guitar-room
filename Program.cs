@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using GuitarRoom.Data;
 using GuitarRoom.Hubs;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +13,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Login";
+    });
+
 builder.Services.AddRazorPages();
 
 builder.Services.AddSignalR();
@@ -37,9 +42,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapRazorPages();
-app.MapHub<BrokerHub>("/brokerHub");
+app.MapControllers().RequireAuthorization();
+app.MapRazorPages().RequireAuthorization();
+
+app.MapHub<BrokerHub>("/brokerHub").RequireAuthorization();
 
 app.Run();

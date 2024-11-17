@@ -1,1 +1,3 @@
-﻿
+﻿const getValueFromCookie = (name) => {
+    
+}
