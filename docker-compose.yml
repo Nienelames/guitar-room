@@ -4,3 +4,27 @@
     build:
       context: .
       dockerfile: Dockerfile
+    ports:
+      - "6000:6000"
+    environment:
+      - ASPNETCORE_URLS=https://+:6000
+    depends_on:
+      - peerjs
+    command: >
+      dotnet GuitarRoom.dll --urls "https://+:6000"
+    networks:
+      - guitarroom-network
+
+  peerjs:
+    image: peerjs/peerjs-server
+    ports:
+      - "9000:9000"
+    environment:
+      - PEER_PORT=9000
+      - PEER_PATH=/ 
+    networks:
+      - guitarroom-network
+
+networks:
+  guitarroom-network:
+    driver: bridge

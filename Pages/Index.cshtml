@@ -39,8 +39,8 @@
         const peers = new Map();
 
         const peerBroker = new Peer(undefined, {
-            host: "/",
-            port: 9000
+            host: "peerjs.housepeak.win",
+            secure: true
         });
 
         peerBroker.on("open", async peerId => {
