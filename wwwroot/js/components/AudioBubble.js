@@ -65,7 +65,7 @@ class AudioBubble extends HTMLDivElement {
     }
     
     #updateMuteButton() {
-        if (!this.audio.muted) {
+        if (this.audio.muted) {
             this.#muteButton.classList.remove("btn-error");
             this.#muteButton.classList.add("btn-success");
             this.#muteButton.textContent = "Unmute";
