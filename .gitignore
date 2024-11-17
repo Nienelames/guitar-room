@@ -4,6 +4,8 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 *.db
+*.db-shm
+*.db-wal
 node_modules
 .idea
 wwwroot/assets/avatars
