@@ -1,6 +1,11 @@
 class AudioBubble extends HTMLDivElement {
     #audio = document.createElement('audio');
     #user;
+
+    #audioControls = document.querySelector("#audio-controls");
+    #muteButton = document.querySelector("#mute-button");
+    #volumeSlider = document.querySelector("#volume-slider");
+    
     constructor()  {
         super();
     }
@@ -9,6 +14,10 @@ class AudioBubble extends HTMLDivElement {
         this.#user = value;
         
         this.#render();
+    }
+    
+    get user() {
+        return this.#user;
     }
     
     set audio(value) {
@@ -20,8 +29,6 @@ class AudioBubble extends HTMLDivElement {
     }
     
     async connectedCallback() {
-        this.className = "flex flex-col items-center justify-center text-center card bg-base-200 shadow-xl gap-4 p-8"
-
         this.addEventListener("contextmenu", this.#handleAudioControlsPopup);
         this.addEventListener("touched", this.#handleAudioControlsPopup);
         this.appendChild(this.audio);
@@ -30,6 +37,8 @@ class AudioBubble extends HTMLDivElement {
     #render() {
         const { displayName, avatarUrl } = this.#user;
         
+        this.setAttribute("data-user-id", this.#user.id);
+        this.className = "flex flex-col items-center justify-center text-center card bg-base-200 shadow-xl gap-4 p-8"
         this.innerHTML = `
             <img class="w-24 h-24 rounded-full" src="${window.location.origin}${avatarUrl}" alt="Avatar">
             <figcaption>${displayName}</figcaption>
@@ -39,37 +48,32 @@ class AudioBubble extends HTMLDivElement {
     #handleAudioControlsPopup(event) {
         event.preventDefault();
 
-        const audioControlsElement = document.querySelector('#audio-controls');
+        this.#audioControls.style.display = "flex";
+        this.#audioControls.style.left = `${event.pageX}px`
+        this.#audioControls.style.top = `${event.pageY}px`
         
-        audioControlsElement.style.display = "flex";
-        audioControlsElement.style.left = `${event.pageX}px`
-        audioControlsElement.style.top = `${event.pageY}px`
-        
-        const volumeSlider = document.querySelector("#volume-slider");
-        
-        volumeSlider.value = this.audio.volume * 100;
-        volumeSlider.onchange = (event) => {
+        this.#volumeSlider.value = this.audio.volume * 100;
+        this.#volumeSlider.onchange = (event) => {
             this.audio.volume = Number(event.target.value) / 100;
         }
-
-        const muteButton = document.querySelector("#mute-button");
         
-        
-        muteButton.onclick = () => {
-            if (!this.audio.muted) {
-                this.audio.muted = true;
-                
-                muteButton.classList.remove("btn-error");
-                muteButton.classList.add("btn-success");
-                muteButton.textContent = "Unmute";
-            } else {
-                this.audio.muted = false;
-
-                muteButton.classList.remove("btn-success");
-                muteButton.classList.add("btn-error");
-                muteButton.textContent = "Mute";
-            }
+        this.#updateMuteButton();
+        this.#muteButton.onclick = () => {
+            this.audio.muted = !this.audio.muted
+            this.#updateMuteButton();
         }
+    }
+    
+    #updateMuteButton() {
+        if (!this.audio.muted) {
+            this.#muteButton.classList.remove("btn-error");
+            this.#muteButton.classList.add("btn-success");
+            this.#muteButton.textContent = "Unmute";
+        } else {
+            this.#muteButton.classList.remove("btn-success");
+            this.#muteButton.classList.add("btn-error");
+            this.#muteButton.textContent = "Mute";
+        } 
     }
 }
 

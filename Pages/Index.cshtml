@@ -3,10 +3,10 @@
 @{
     ViewData["Title"] = "Home page";
 }
-<main class="grid grid-cols-[20rem_5px_1fr_20rem] auto-rows-min grid-flow-col">
+<main class="grid grid-cols-[20rem_5px_1fr_20rem] auto-rows-min">
     <partial name="Shared/_PersonalUtils"/>
     <div class="divider divider-horizontal h-screen"></div>
-    <section id="audio-grid" class="grid justify-items-center gap-4 mt-40 h-min"></section>
+    <section id="audio-grid" class="grid justify-items-center gap-4 mt-40 h-min grid-flow-col"></section>
     <aside></aside>
 </main>
 <menu id="audio-controls" class="fixed flex-col bg-base-300 rounded-box w-56 hidden gap-4 p-4">
@@ -22,72 +22,83 @@
     <script src="~/js/components/AudioBubble.js"></script>
     <script type="module">
         "use strict";
-
-        const socket = new signalR.HubConnectionBuilder().withUrl("/brokerHub").build();
-        const peers = new Map();
-
-        const peerBroker = new Peer(undefined, {
-            host: "/",
-            port: 9000
-        })
-
-        await socket.start()
-        peerBroker.on("open", async id => {
-            await socket.invoke("AnnounceConnection", id);
-        })
-
-        socket.on("peer-disconnected", peerId => {
-            if (peers.get(peerId)) peers.get(peerId).close();
-        })
-
-        function addAudioStream(audioBubble, stream) {
-            audioBubble.audio.srcObject = stream;
-            audioBubble.audio.addEventListener("loadedmetadata", () => {
-                audioBubble.audio.play();
-            })
-            
-            console.log(audioBubble)
-            document.querySelector("#audio-grid").append(audioBubble);
-        }
-
-        function connectToNewPeer(peerId, stream) {
-            const call = peerBroker.call(peerId, stream);
-            const peerAudioBubble = document.createElement("div", { is: "audio-bubble" });
-            
-            call.on("stream", peerAudioStream => {
-                addAudioStream(peerAudioBubble, peerAudioStream);
-            });
-            call.on("close", () => {
-                call.close();
-                peers.delete(peerId);
-                
-                peerAudioBubble.remove();
-            });
-            
-            peers.set(peerId, call);
-        }
-
         const me = await (await fetch("api/user/me")).json();
-        const myAudioBubble = document.createElement("div", { is: "audio-bubble"});
+        
+        const myAudioBubble = document.createElement("div", { is: "audio-bubble" });
         myAudioBubble.audio.muted = true;
         myAudioBubble.user = me;
+        
         const myStream = await navigator.mediaDevices.getUserMedia({
             video: false,
             audio: true,
         });
         addAudioStream(myAudioBubble, myStream);
-        
+
+        const socket = new signalR.HubConnectionBuilder().withUrl("/brokerHub").build();
+        await socket.start();
+        const peers = new Map();
+
+        const peerBroker = new Peer(undefined, {
+            host: "/",
+            port: 9000
+        });
+
+        peerBroker.on("open", async peerId => {
+            await socket.invoke("AnnounceConnection", peerId, me.id);
+        });
+
+        socket.on("peer-disconnected", peerId => {
+            if (peers.get(peerId)) {
+                peers.get(peerId).close();
+                peers.delete(peerId);
+            }
+        });
+
+        async function addAudioStream(audioBubble, stream, peerId) {
+            if (!audioBubble.user) {
+                const userResponse = await fetch(`api/user/by-peer?id=${peerId}`);
+                audioBubble.user = await userResponse.json();
+            }
+
+            audioBubble.audio.srcObject = stream;
+            audioBubble.audio.addEventListener("loadedmetadata", () => {
+                audioBubble.audio.play();
+            });
+
+            document.querySelector("#audio-grid").appendChild(audioBubble);
+        }
+
+        function connectToNewPeer(peerId, stream) {
+            const call = peerBroker.call(peerId, stream);
+            const peerAudioBubble = document.createElement("div", { is: "audio-bubble" });
+
+            call.on("stream", peerAudioStream => {
+                addAudioStream(peerAudioBubble, peerAudioStream, peerId);
+            });
+            call.on("close", () => {
+                call.close();
+                peers.delete(peerId);
+                peerAudioBubble.remove();
+            });
+
+            peers.set(peerId, call); 
+        }
+
         peerBroker.on("call", call => {
             call.answer(myStream);
             const peerAudioBubble = document.createElement("div", { is: "audio-bubble" });
-           
+
             call.on("stream", peerAudioStream => {
-                 addAudioStream(peerAudioBubble, peerAudioStream);     
+                addAudioStream(peerAudioBubble, peerAudioStream, call.peer);
             });
-        })
-           
-        socket.on("peer-connected", peerId => {
-            connectToNewPeer(peerId, myStream);
-        })
+        });
+
+        socket.on("peer-connected", (peerId, userId) => {
+            if (userId !== me.id) {
+                console.log("Connecting to peer with ID", peerId)
+                connectToNewPeer(peerId, myStream);
+            }
+        });
+
     </script>
 }
