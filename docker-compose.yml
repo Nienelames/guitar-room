@@ -7,13 +7,15 @@
     ports:
       - "6000:6000"
     environment:
-      - ASPNETCORE_URLS=https://+:6000
+      - ASPNETCORE_URLS=http://*:6000
     depends_on:
       - peerjs
     command: >
-      dotnet GuitarRoom.dll --urls "https://+:6000"
+      dotnet GuitarRoom.dll
     networks:
       - guitarroom-network
+    volumes:
+      - /opt/guitar-room/data:/app/db
 
   peerjs:
     image: peerjs/peerjs-server

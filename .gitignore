@@ -8,4 +8,4 @@ riderModule.iml
 *.db-wal
 node_modules
 .idea
-wwwroot/assets/avatars
+wwwroot/assets/avatars/*
